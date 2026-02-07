@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 
-const subscriptionShema = new mongoose.Schema({
+const subscriptionSchema = new mongoose.Schema({
     name:{
         type:String,
-        required;[true,'Subscription name is required'],
+        required:[true,'Subscription name is required'],
         trim:true,
         minLength:2,
         maxLength:100,
@@ -40,19 +40,18 @@ const subscriptionShema = new mongoose.Schema({
     startDate:{
         type:Date,
         required:true,
-        validator:{
-            validate:(value)=>{
-                value <=new Date()
+        validate:{
+            validator:function(value){
+               return value <=new Date()
             },
             message:"Start date must be in past "
         }
     },
     renewalDate:{
         type:Date,
-        required:true,
-        validator:{
-            validate:function(value){
-                value> this.StartDate;
+        validate:{
+            validator:function(value){
+               return value> this.startDate;
             },
             message:"Renewal date must be after start date"
         }
@@ -68,7 +67,7 @@ const subscriptionShema = new mongoose.Schema({
 
 //a function to auto-calculate the renewal date if missing
 //yeh tab call hota before a document is saved to the db
-subscriptionSchema.pre('save',function(next){
+subscriptionSchema.pre('save', async function(){
     if(!this.renewalDate){
         const renewalPeriods = {
             daily:1,
@@ -86,9 +85,9 @@ subscriptionSchema.pre('save',function(next){
         this.status = 'expired';
     }
 
-    next();
-})
+    
+});
 
-const Subscription = mongoose.model('Subscription',subscriptionShema);
+const Subscription = mongoose.model('Subscription',subscriptionSchema);
 
 export default Subscription;
